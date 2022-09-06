@@ -63,6 +63,17 @@ pub struct AudioItem {
     pub duration: i32,
     pub available: bool,
     pub alternatives: Option<Vec<SpotifyId>>,
+
+    // Track specific
+    pub album:   Option<Album>,
+    pub artists: Option<Vec<Artist>>,
+
+    // Episode specific
+    pub show: Option<Show>,
+
+    // Images
+    pub covers: Option<Vec<FileId>>
+    
 }
 
 impl AudioItem {
@@ -89,7 +100,15 @@ impl AudioFiles for Track {
                 Err(MercuryError)
             }
             Ok(uri) => {
-                let item = Self::get(session, id).await?;
+                let item  = Self::get(session, id).await?;
+                let album = Album::get(session, item.album).await?;
+
+                let mut artists = Vec::new();
+                for artist in item.artists.iter() {
+                    artists.push(Artist::get(session, *artist).await?);
+                }
+
+
                 Ok(AudioItem {
                     id,
                     uri: format!("spotify:track:{}", uri),
@@ -98,6 +117,13 @@ impl AudioFiles for Track {
                     duration: item.duration,
                     available: item.available,
                     alternatives: Some(item.alternatives),
+
+                    album:   Some(album.clone()),
+                    artists: Some(artists),
+                    show:    None,
+
+                    covers: Some(album.covers)
+
                 })
             }
         }
@@ -114,6 +140,8 @@ impl AudioFiles for Episode {
             }
             Ok(uri) => {
                 let item = Self::get(session, id).await?;
+                let show = Show::get(session, item.show).await?;
+
                 Ok(AudioItem {
                     id,
                     uri: format!("spotify:episode:{}", uri),
@@ -122,6 +150,12 @@ impl AudioFiles for Episode {
                     duration: item.duration,
                     available: item.available,
                     alternatives: None,
+
+                    album:   None,
+                    artists: None,
+                    show:    Some(show),
+                    covers:  Some(item.covers)
+
                 })
             }
         }

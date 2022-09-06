@@ -10,7 +10,7 @@ use crate::core::spotify_id::{SpotifyAudioType, SpotifyId, SpotifyIdError};
 use crate::core::util::SeqGenerator;
 use crate::core::version;
 use crate::playback::mixer::Mixer;
-use crate::playback::player::{Player, PlayerEvent, PlayerEventChannel};
+use crate::playback::player::{PlayerEvent, PlayerEventChannel};
 use crate::protocol;
 use crate::protocol::spirc::{DeviceState, Frame, MessageType, PlayStatus, State, TrackRef};
 
@@ -21,6 +21,21 @@ use protobuf::{self, Message};
 use rand::seq::SliceRandom;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::UnboundedReceiverStream;
+
+
+pub trait PlayerImpl {
+    fn play(&self);
+    fn pause(&self);
+    fn stop(&self);
+    fn seek(&self, position_ms: u32);
+    fn preload(&self, track_id: SpotifyId);
+    fn emit_volume_set_event(&self, volume: u16);
+    fn set_auto_normalise_as_album(&self, setting: bool);
+    fn get_player_event_channel(&self) -> PlayerEventChannel;
+    fn load(&mut self, track_id: SpotifyId, start_playing: bool, position_ms: u32) -> u64;
+}
+
+
 
 enum SpircPlayStatus {
     Stopped,
@@ -498,11 +513,26 @@ impl SpircTask {
         if let Some(play_request_id) = event.get_play_request_id() {
             if Some(play_request_id) == self.play_request_id {
                 match event {
+                    PlayerEvent::Prev { .. } => {
+                        self.handle_prev();
+                        self.notify(None, true);
+                    },
                     PlayerEvent::EndOfTrack { .. } => self.handle_end_of_track(),
                     PlayerEvent::Loading { .. } => self.notify(None, false),
                     PlayerEvent::Playing { position_ms, .. } => {
                         let new_nominal_start_time = self.now_ms() - position_ms as i64;
                         match self.play_status {
+                            SpircPlayStatus::Paused {
+                                ..
+                            } => {
+                                self.state.set_status(PlayStatus::kPlayStatusPlay);
+                                self.update_state_position(position_ms);
+                                self.notify(None, true);
+                                self.play_status = SpircPlayStatus::Playing {
+                                    nominal_start_time: new_nominal_start_time,
+                                    preloading_of_next_track_triggered: false,
+                                };
+                            },
                             SpircPlayStatus::Playing {
                                 ref mut nominal_start_time,
                                 ..
@@ -512,7 +542,7 @@ impl SpircTask {
                                     self.update_state_position(position_ms);
                                     self.notify(None, true);
                                 }
-                            }
+                            },
                             SpircPlayStatus::LoadingPlay { .. }
                             | SpircPlayStatus::LoadingPause { .. } => {
                                 self.state.set_status(PlayStatus::kPlayStatusPlay);
@@ -569,6 +599,16 @@ impl SpircTask {
                     PlayerEvent::Unavailable { track_id, .. } => self.handle_unavailable(track_id),
                     _ => (),
                 }
+            }
+        } else {
+            match event {
+                PlayerEvent::VolumeSet { volume, .. } => {
+                    let old_volume = (self.device.get_volume() as u16).saturating_add(VOLUME_STEP_SIZE);
+                    info!(">>>>>>>>>>>> NEW VOLUME {} OLD VOLUME {}", volume, old_volume);
+                    self.set_volume_with_spotify(volume);
+                    self.notify(None, true);
+                },
+                _ => ()
             }
         }
     }
@@ -1246,6 +1286,14 @@ impl SpircTask {
             cache.save_volume(volume)
         }
         self.player.emit_volume_set_event(volume);
+    }
+
+    fn set_volume_with_spotify(&mut self, volume: u16) {
+        self.device.set_volume(volume as u32);
+        self.mixer.set_volume(volume);
+        if let Some(cache) = self.session.cache() {
+            cache.save_volume(volume)
+        }
     }
 }
 

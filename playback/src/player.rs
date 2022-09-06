@@ -160,6 +160,12 @@ pub enum PlayerEvent {
     VolumeSet {
         volume: u16,
     },
+
+    // Used to proxy previous track selected in roon to spirc
+    Prev {
+        play_request_id: u64,
+    },
+
 }
 
 impl PlayerEvent {
@@ -190,7 +196,7 @@ impl PlayerEvent {
             | Stopped {
                 play_request_id, ..
             } => Some(*play_request_id),
-            Changed { .. } | Preloading { .. } | VolumeSet { .. } => None,
+            Prev { .. } | Changed { .. } | Preloading { .. } | VolumeSet { .. } => None,
         }
     }
 }

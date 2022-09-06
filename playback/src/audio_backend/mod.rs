@@ -77,40 +77,40 @@ macro_rules! sink_as_bytes {
     };
 }
 
-#[cfg(feature = "alsa-backend")]
-mod alsa;
-#[cfg(feature = "alsa-backend")]
-use self::alsa::AlsaSink;
-
-#[cfg(feature = "portaudio-backend")]
-mod portaudio;
-#[cfg(feature = "portaudio-backend")]
-use self::portaudio::PortAudioSink;
-
-#[cfg(feature = "pulseaudio-backend")]
-mod pulseaudio;
-#[cfg(feature = "pulseaudio-backend")]
-use self::pulseaudio::PulseAudioSink;
-
-#[cfg(feature = "jackaudio-backend")]
-mod jackaudio;
-#[cfg(feature = "jackaudio-backend")]
-use self::jackaudio::JackSink;
-
-#[cfg(feature = "gstreamer-backend")]
-mod gstreamer;
-#[cfg(feature = "gstreamer-backend")]
-use self::gstreamer::GstreamerSink;
-
-#[cfg(any(feature = "rodio-backend", feature = "rodiojack-backend"))]
-mod rodio;
-#[cfg(feature = "rodio-backend")]
-use self::rodio::RodioSink;
-
-#[cfg(feature = "sdl-backend")]
-mod sdl;
-#[cfg(feature = "sdl-backend")]
-use self::sdl::SdlSink;
+//#[cfg(feature = "alsa-backend")]
+//mod alsa;
+//#[cfg(feature = "alsa-backend")]
+//use self::alsa::AlsaSink;
+//
+//#[cfg(feature = "portaudio-backend")]
+//mod portaudio;
+//#[cfg(feature = "portaudio-backend")]
+//use self::portaudio::PortAudioSink;
+//
+//#[cfg(feature = "pulseaudio-backend")]
+//mod pulseaudio;
+//#[cfg(feature = "pulseaudio-backend")]
+//use self::pulseaudio::PulseAudioSink;
+//
+//#[cfg(feature = "jackaudio-backend")]
+//mod jackaudio;
+//#[cfg(feature = "jackaudio-backend")]
+//use self::jackaudio::JackSink;
+//
+//#[cfg(feature = "gstreamer-backend")]
+//mod gstreamer;
+//#[cfg(feature = "gstreamer-backend")]
+//use self::gstreamer::GstreamerSink;
+//
+//#[cfg(any(feature = "rodio-backend", feature = "rodiojack-backend"))]
+//mod rodio;
+//#[cfg(feature = "rodio-backend")]
+//use self::rodio::RodioSink;
+//
+//#[cfg(feature = "sdl-backend")]
+//mod sdl;
+//#[cfg(feature = "sdl-backend")]
+//use self::sdl::SdlSink;
 
 mod pipe;
 use self::pipe::StdoutSink;
@@ -119,22 +119,22 @@ mod subprocess;
 use self::subprocess::SubprocessSink;
 
 pub const BACKENDS: &[(&str, SinkBuilder)] = &[
-    #[cfg(feature = "rodio-backend")]
-    (RodioSink::NAME, rodio::mk_rodio), // default goes first
-    #[cfg(feature = "alsa-backend")]
-    (AlsaSink::NAME, mk_sink::<AlsaSink>),
-    #[cfg(feature = "portaudio-backend")]
-    (PortAudioSink::NAME, mk_sink::<PortAudioSink>),
-    #[cfg(feature = "pulseaudio-backend")]
-    (PulseAudioSink::NAME, mk_sink::<PulseAudioSink>),
-    #[cfg(feature = "jackaudio-backend")]
-    (JackSink::NAME, mk_sink::<JackSink>),
-    #[cfg(feature = "gstreamer-backend")]
-    (GstreamerSink::NAME, mk_sink::<GstreamerSink>),
-    #[cfg(feature = "rodiojack-backend")]
-    ("rodiojack", rodio::mk_rodiojack),
-    #[cfg(feature = "sdl-backend")]
-    (SdlSink::NAME, mk_sink::<SdlSink>),
+    //#[cfg(feature = "rodio-backend")]
+    //(RodioSink::NAME, rodio::mk_rodio), // default goes first
+    //#[cfg(feature = "alsa-backend")]
+    //(AlsaSink::NAME, mk_sink::<AlsaSink>),
+    //#[cfg(feature = "portaudio-backend")]
+    //(PortAudioSink::NAME, mk_sink::<PortAudioSink>),
+    //#[cfg(feature = "pulseaudio-backend")]
+    //(PulseAudioSink::NAME, mk_sink::<PulseAudioSink>),
+    //#[cfg(feature = "jackaudio-backend")]
+    //(JackSink::NAME, mk_sink::<JackSink>),
+    //#[cfg(feature = "gstreamer-backend")]
+    //(GstreamerSink::NAME, mk_sink::<GstreamerSink>),
+    //#[cfg(feature = "rodiojack-backend")]
+    //("rodiojack", rodio::mk_rodiojack),
+    //#[cfg(feature = "sdl-backend")]
+    //(SdlSink::NAME, mk_sink::<SdlSink>),
     (StdoutSink::NAME, mk_sink::<StdoutSink>),
     (SubprocessSink::NAME, mk_sink::<SubprocessSink>),
 ];

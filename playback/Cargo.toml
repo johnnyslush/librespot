@@ -29,20 +29,20 @@ zerocopy = { version = "0.6" }
 thiserror = { version = "1" }
 
 # Backends
-alsa            = { version = "0.6", optional = true }
-portaudio-rs    = { version = "0.3", optional = true }
-libpulse-binding        = { version = "2", optional = true, default-features = false }
-libpulse-simple-binding = { version = "2", optional = true, default-features = false }
-jack            = { version = "0.10", optional = true }
-sdl2            = { version = "0.35", optional = true }
-gstreamer       = { version = "0.18", optional = true }
-gstreamer-app   = { version = "0.18", optional = true }
-gstreamer-audio = { version = "0.18", optional = true }
-glib            = { version = "0.15", optional = true }
+#alsa            = { version = "0.6", optional = true }
+#portaudio-rs    = { version = "0.3", optional = true }
+#libpulse-binding        = { version = "2", optional = true, default-features = false }
+#libpulse-simple-binding = { version = "2", optional = true, default-features = false }
+#jack            = { version = "0.10", optional = true }
+#sdl2            = { version = "0.35", optional = true }
+#gstreamer       = { version = "0.18", optional = true }
+#gstreamer-app   = { version = "0.18", optional = true }
+#gstreamer-audio = { version = "0.18", optional = true }
+#glib            = { version = "0.15", optional = true }
 
 # Rodio dependencies
-rodio           = { version = "0.15", optional = true, default-features = false }
-cpal            = { version = "0.13", optional = true }
+#rodio           = { version = "0.15", optional = true, default-features = false }
+#cpal            = { version = "0.13", optional = true }
 
 # Decoder
 lewton = "0.10"
@@ -52,12 +52,12 @@ ogg = "0.8"
 rand = { version = "0.8", features = ["small_rng"] }
 rand_distr = "0.4"
 
-[features]
-alsa-backend = ["alsa"]
-portaudio-backend = ["portaudio-rs"]
-pulseaudio-backend = ["libpulse-binding", "libpulse-simple-binding"]
-jackaudio-backend = ["jack"]
-rodio-backend = ["rodio", "cpal"]
-rodiojack-backend = ["rodio", "cpal/jack"]
-sdl-backend = ["sdl2"]
-gstreamer-backend = ["gstreamer", "gstreamer-app", "gstreamer-audio", "glib"]
+#[features]
+#alsa-backend = ["alsa"]
+#portaudio-backend = ["portaudio-rs"]
+#pulseaudio-backend = ["libpulse-binding", "libpulse-simple-binding"]
+#jackaudio-backend = ["jack"]
+#rodio-backend = ["rodio", "cpal"]
+#rodiojack-backend = ["rodio", "cpal/jack"]
+#sdl-backend = ["sdl2"]
+#gstreamer-backend = ["gstreamer", "gstreamer-app", "gstreamer-audio", "glib"]

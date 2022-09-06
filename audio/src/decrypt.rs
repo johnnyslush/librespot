@@ -15,6 +15,12 @@ pub struct AudioDecrypt<T: io::Read> {
     reader: T,
 }
 
+impl AudioDecrypt<AudioFile> {
+    pub fn size(&mut self) -> usize {
+        return self.reader.get_stream_loader_controller().len();
+    }
+}
+
 impl<T: io::Read> AudioDecrypt<T> {
     pub fn new(key: AudioKey, reader: T) -> AudioDecrypt<T> {
         let cipher = Aes128Ctr::new(

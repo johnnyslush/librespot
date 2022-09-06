@@ -58,8 +58,10 @@ enum SpircPlayStatus {
 type BoxedFuture<T> = Pin<Box<dyn FusedFuture<Output = T> + Send>>;
 type BoxedStream<T> = Pin<Box<dyn FusedStream<Item = T> + Send>>;
 
-struct SpircTask {
-    player: Player,
+struct SpircTask<T> 
+where T: PlayerImpl
+{
+    player: T,
     mixer: Box<dyn Mixer>,
     config: SpircTaskConfig,
 
@@ -234,11 +236,12 @@ fn url_encode(bytes: impl AsRef<[u8]>) -> String {
     form_urlencoded::byte_serialize(bytes.as_ref()).collect()
 }
 
-impl Spirc {
-    pub fn new(
+impl Spirc
+{
+    pub fn new<T: PlayerImpl>(
         config: ConnectConfig,
         session: Session,
-        player: Player,
+        player: T,
         mixer: Box<dyn Mixer>,
     ) -> (Spirc, impl Future<Output = ()>) {
         debug!("new Spirc[{}]", session.session_id());
@@ -345,7 +348,7 @@ impl Spirc {
     }
 }
 
-impl SpircTask {
+impl<T: PlayerImpl> SpircTask<T> {
     async fn run(mut self) {
         while !self.session.is_invalid() && !self.shutdown {
             let commands = self.commands.as_mut();
@@ -1297,19 +1300,21 @@ impl SpircTask {
     }
 }
 
-impl Drop for SpircTask {
+impl<T: PlayerImpl> Drop for SpircTask<T> {
     fn drop(&mut self) {
         debug!("drop Spirc[{}]", self.session.session_id());
     }
 }
 
-struct CommandSender<'a> {
-    spirc: &'a mut SpircTask,
+struct CommandSender<'a, T> 
+where T: PlayerImpl
+{
+    spirc: &'a mut SpircTask<T>,
     frame: protocol::spirc::Frame,
 }
 
-impl<'a> CommandSender<'a> {
-    fn new(spirc: &'a mut SpircTask, cmd: MessageType) -> CommandSender {
+impl<'a, T: PlayerImpl> CommandSender<'a, T> {
+    fn new(spirc: &'a mut SpircTask<T>, cmd: MessageType) -> CommandSender<T> {
         let mut frame = protocol::spirc::Frame::new();
         frame.set_version(1);
         frame.set_protocol_version(::std::convert::Into::into("2.0.0"));
@@ -1321,13 +1326,13 @@ impl<'a> CommandSender<'a> {
         CommandSender { spirc, frame }
     }
 
-    fn recipient(mut self, recipient: &'a str) -> CommandSender {
+    fn recipient(mut self, recipient: &'a str) -> CommandSender<T> {
         self.frame.mut_recipient().push(recipient.to_owned());
         self
     }
 
     #[allow(dead_code)]
-    fn state(mut self, state: protocol::spirc::State) -> CommandSender<'a> {
+    fn state(mut self, state: protocol::spirc::State) -> CommandSender<'a, T> {
         self.frame.set_state(state);
         self
     }

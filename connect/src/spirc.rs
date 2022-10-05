@@ -565,6 +565,18 @@ impl<T: PlayerImpl> SpircTask<T> {
                         ..
                     } => {
                         match self.play_status {
+                            // If roon pauses, need to update state in spotify
+                            SpircPlayStatus::Playing {
+                                ..
+                            } => {
+                                self.state.set_status(PlayStatus::kPlayStatusPause);
+                                self.update_state_position(new_position_ms);
+                                self.notify(None, true);
+                                self.play_status = SpircPlayStatus::Paused {
+                                    position_ms: new_position_ms,
+                                    preloading_of_next_track_triggered: false,
+                                };
+                            },
                             SpircPlayStatus::Paused {
                                 ref mut position_ms,
                                 ..

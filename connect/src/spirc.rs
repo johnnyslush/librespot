@@ -95,6 +95,9 @@ pub enum SpircCommand {
     VolumeDown,
     Shutdown,
     Shuffle,
+    Rename {
+        name: String
+    }
 }
 
 struct SpircTaskConfig {
@@ -319,6 +322,11 @@ impl Spirc
         (spirc, task.run())
     }
 
+    pub fn rename(&self, name: String) {
+        let _ = self.commands.send(SpircCommand::Rename {
+            name
+        });
+    }
     pub fn play(&self) {
         let _ = self.commands.send(SpircCommand::Play);
     }
@@ -438,6 +446,12 @@ impl<T: PlayerImpl> SpircTask<T> {
     fn handle_command(&mut self, cmd: SpircCommand) {
         let active = self.device.get_is_active();
         match cmd {
+            SpircCommand::Rename {
+                name
+            } => {
+                self.device.set_name(name);
+                self.notify(None, false);
+            }
             SpircCommand::Play => {
                 if active {
                     self.handle_play();
@@ -621,7 +635,10 @@ impl<T: PlayerImpl> SpircTask<T> {
                     let old_volume = (self.device.get_volume() as u16).saturating_add(VOLUME_STEP_SIZE);
                     info!(">>>>>>>>>>>> NEW VOLUME {} OLD VOLUME {}", volume, old_volume);
                     self.set_volume_with_spotify(volume);
-                    self.notify(None, true);
+                    self.notify(None, false);
+                },
+                PlayerEvent::RenameDevice { name } => {
+                    self.rename(name);
                 },
                 _ => ()
             }
@@ -1286,7 +1303,7 @@ impl<T: PlayerImpl> SpircTask<T> {
             PlayStatus::kPlayStatusStop => "kPlayStatusStop",
             PlayStatus::kPlayStatusPlay => "kPlayStatusPlay",
         };
-        trace!("Sending status to server: [{}]", status_string);
+        info!("Sending status to server: [{}]", status_string);
         let mut cs = CommandSender::new(self, MessageType::kMessageTypeNotify);
         if let Some(s) = recipient {
             cs = cs.recipient(s);
@@ -1301,6 +1318,11 @@ impl<T: PlayerImpl> SpircTask<T> {
             cache.save_volume(volume)
         }
         self.player.emit_volume_set_event(volume);
+    }
+
+    fn rename(&mut self, name: String) {
+        self.device.set_name(name);
+        self.notify(None, false);
     }
 
     fn set_volume_with_spotify(&mut self, volume: u16) {

@@ -166,6 +166,10 @@ pub enum PlayerEvent {
         play_request_id: u64,
     },
 
+    // Used to rename device in spotify
+    RenameDevice {
+        name: String,
+    }
 }
 
 impl PlayerEvent {
@@ -196,7 +200,7 @@ impl PlayerEvent {
             | Stopped {
                 play_request_id, ..
             } => Some(*play_request_id),
-            Prev { .. } | Changed { .. } | Preloading { .. } | VolumeSet { .. } => None,
+            RenameDevice { .. } | Prev { .. } | Changed { .. } | Preloading { .. } | VolumeSet { .. } => None,
         }
     }
 }

@@ -199,8 +199,11 @@ impl PlayerEvent {
             }
             | Stopped {
                 play_request_id, ..
+            }
+            | Prev {
+                play_request_id, ..
             } => Some(*play_request_id),
-            RenameDevice { .. } | Prev { .. } | Changed { .. } | Preloading { .. } | VolumeSet { .. } => None,
+            RenameDevice { .. } | Changed { .. } | Preloading { .. } | VolumeSet { .. } => None,
         }
     }
 }

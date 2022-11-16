@@ -13,7 +13,7 @@ use futures_core::Stream;
 use hmac::{Hmac, Mac, NewMac};
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Method, Request, Response, StatusCode};
-use log::{debug, warn};
+use log::{debug, info, warn};
 use serde_json::json;
 use sha1::{Digest, Sha1};
 use tokio::sync::{mpsc, oneshot};
@@ -210,7 +210,7 @@ impl DiscoveryServer {
             let result = server
                 .with_graceful_shutdown(async {
                     close_rx.await.unwrap_err();
-                    debug!("Shutting down discovery server");
+                    info!("Shutting down discovery server");
                 })
                 .await;
 

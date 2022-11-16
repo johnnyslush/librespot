@@ -141,3 +141,4 @@ impl Stream for Discovery {
         Pin::new(&mut self.server).poll_next(cx)
     }
 }
+unsafe impl Send for Discovery {} // XXX BAD ?
